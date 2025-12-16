@@ -1,28 +1,37 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+      <router-view></router-view>
   </div>
-</template>
+  </template>
+  <script>
+  
+  export default {
+    name: 'app' ,
+    mounted() {
+      // 应用启动时检查登录状态并获取用户信息
+      const userId = sessionStorage.getItem('userId')
+      if (userId && !this.$store.state.user.userInfo) {
+        this.$store.dispatch('user/fetchUserInfo')
+      }
+    } 
+  };
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
-
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
-</script>
-
+  </script>
 <style>
+/* 基础重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  min-height: 100vh;
 }
 </style>
