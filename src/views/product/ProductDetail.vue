@@ -483,7 +483,8 @@ export default {
           productName: this.commodity.name,
           price: this.commodity.price,
           quantity: this.quantity,
-          image: this.commodity.image
+          image: this.commodity.image,
+          description: this.commodity.description || this.commodity.name // 添加描述字段
         };
 
         const response = await cartAPI.addToCart(cartData);
