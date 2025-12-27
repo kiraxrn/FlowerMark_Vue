@@ -38,7 +38,7 @@ export function mockGetSettingData() {
         gender: 1,
         birthday: '1990-01-01',
         address: '北京市朝阳区',
-        avatar: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664'
+        avatar: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop'
       },
       security: {
         twoFactorAuth: false,

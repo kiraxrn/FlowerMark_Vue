@@ -1,11 +1,11 @@
 <template>
-  <el-aside class="group2" :class="{ 'collapsed': isCollapsed }">
+  <el-aside class="group2" :class="{ 'collapsed': isCollapsed && isMobile }">
     <div class="sidebar-header">
-      <h3 class="sidebar-title" :title="isCollapsed ? '分类' : ''">
-        <template v-if="!isCollapsed">分类</template>
+      <h3 class="sidebar-title" :title="isCollapsed && isMobile ? '分类' : ''">
+        <template v-if="!isCollapsed || !isMobile">分类</template>
         <template v-else>{{ getFirstChar('分类') }}</template>
       </h3>
-      <div class="collapse-toggle" @click="toggleCollapse">
+      <div v-if="isMobile" class="collapse-toggle" @click="toggleCollapse">
         <i :class="isCollapsed ? 'el-icon-s-unfold' : 'el-icon-s-fold'" ></i>
       </div>
     </div>
@@ -15,7 +15,7 @@
       class="category-menu"
       router
       @select="handleCategorySelect"
-      :collapse="isCollapsed"
+      :collapse="isCollapsed && isMobile"
     >
       <el-menu-item 
         v-for="category in categories" 
@@ -24,7 +24,7 @@
         :class="{ active: $route.path.includes(category.key) }"
         :title="category.title"
       >
-        <div v-if="!isCollapsed" class="menu-item-content">
+        <div v-if="!isCollapsed || !isMobile" class="menu-item-content">
           <span class="menu-icon">{{ getFirstChar(category.title) }}</span>
           <span class="menu-item-text">{{ category.title }}</span>
         </div>
@@ -51,13 +51,12 @@ export default {
       ],
       isCollapsed: false,
       screenWidth: 0,
-      autoCollapse: false
+      isMobile: false
     }
   },
   mounted() {
-    this.screenWidth = window.innerWidth;
+    this.checkDeviceType();
     window.addEventListener('resize', this.handleResize);
-    this.checkAutoCollapse();
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.handleResize);
@@ -76,13 +75,6 @@ export default {
       return text.charAt(0);
     },
     
-    getShortTitle(text) {
-      // 返回前2-3个字符作为缩略显示
-      if (text.length <= 3) return text;
-      if (text.length <= 4) return text.substring(0, 2);
-      return text.substring(0, 3);
-    },
-    
     handleCategorySelect(index) {
       const categoryKey = this.categories.find(c => c.path === index)?.key;
       if (categoryKey) {
@@ -90,23 +82,38 @@ export default {
       }
     },
     
-    handleResize() {
+    checkDeviceType() {
       this.screenWidth = window.innerWidth;
-      this.checkAutoCollapse();
-    },
-    
-    checkAutoCollapse() {
-      // 768px以下自动折叠
-      this.autoCollapse = this.screenWidth < 768;
-      if (this.autoCollapse && !this.isCollapsed) {
+      // 768px以下为移动端
+      this.isMobile = this.screenWidth < 768;
+      // PC端默认展开，移动端默认折叠
+      if (this.isMobile) {
         this.isCollapsed = true;
-      } else if (!this.autoCollapse && this.isCollapsed && this.screenWidth >= 768) {
+      } else {
         this.isCollapsed = false;
       }
     },
     
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+      const wasMobile = this.isMobile;
+      this.isMobile = this.screenWidth < 768;
+      
+      // 设备类型变化时调整折叠状态
+      if (wasMobile !== this.isMobile) {
+        if (this.isMobile) {
+          this.isCollapsed = true; // 切换到移动端时折叠
+        } else {
+          this.isCollapsed = false; // 切换到PC端时展开
+        }
+      }
+    },
+    
     toggleCollapse() {
-      this.isCollapsed = !this.isCollapsed;
+      // 只在移动端允许折叠/展开
+      if (this.isMobile) {
+        this.isCollapsed = !this.isCollapsed;
+      }
     }
   },
   watch: {
@@ -136,9 +143,9 @@ export default {
 }
 
 .group2.collapsed {
-  min-width: 70px;
-  max-width: 70px;
-  padding: 20px 8px;
+  min-width: 80px;
+  max-width: 80px;
+  padding: 15px 10px;
 }
 
 /* 侧边栏头部 */
@@ -147,6 +154,16 @@ export default {
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.group2.collapsed .sidebar-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  min-height: 30px;
 }
 
 .sidebar-title {
@@ -161,12 +178,14 @@ export default {
   letter-spacing: 0.5px;
   text-align: center;
   transition: all 0.3s ease;
+  flex: 1;
 }
 
 .group2.collapsed .sidebar-title {
-  font-size: 20px;
-  color: #4CAF50;
-  font-weight: bold;
+  font-size: 0;
+  width: 0;
+  opacity: 0;
+  flex: 0;
 }
 
 .collapse-toggle {
@@ -183,13 +202,19 @@ export default {
   z-index: 10;
 }
 
-.collapse-toggle:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #333;
+.group2.collapsed .collapse-toggle {
+  position: static;
+  transform: none;
+  right: auto;
+  top: auto;
+  margin: 0 auto;
+  color: #4CAF50;
+  font-size: 20px;
 }
 
-.group2.collapsed .collapse-toggle {
-  display: none; /* 折叠状态下隐藏切换按钮 */
+.group2.collapsed .collapse-toggle:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
 }
 
 /* 菜单容器 */
@@ -199,6 +224,10 @@ export default {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.group2.collapsed .category-menu {
+  padding: 0 2px;
 }
 
 .category-menu::-webkit-scrollbar {
@@ -232,7 +261,12 @@ export default {
   position: relative;
 }
 
-/* 菜单内容容器 - 展开状态 */
+.group2.collapsed .category-menu .el-menu-item {
+  padding: 0 5px !important;
+  justify-content: center;
+}
+
+/* 菜单内容容器 */
 .menu-item-content {
   display: flex;
   align-items: center;
@@ -263,19 +297,16 @@ export default {
   margin-right: 10px;
 }
 
-/* 菜单文本 - 展开状态 */
-.menu-item-text {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.group2.collapsed .menu-icon {
+  margin-right: 0;
+  width: 35px;
+  height: 35px;
+  font-size: 18px;
 }
 
-/* 菜单文本 - 折叠状态 */
-.menu-item-text-short {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
+/* 菜单文本 */
+.menu-item-text {
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -308,12 +339,6 @@ export default {
   font-weight: bold;
 }
 
-.group2.collapsed .category-menu .el-menu-item.active,
-.group2.collapsed .category-menu .el-menu-item.is-active {
-  background-color: rgba(240, 249, 240, 0.9) !important;
-  border-left: 4px solid #4CAF50 !important;
-}
-
 .category-menu .el-menu-item.is-active::before {
   display: none;
 }
@@ -322,30 +347,21 @@ export default {
 
 /* 大屏幕：1200px 以上 */
 @media (max-width: 1440px) {
-  .group2:not(.collapsed) {
+  .group2 {
     min-width: 200px;
     max-width: 220px;
   }
 }
 
 @media (max-width: 1200px) {
-  .group2:not(.collapsed) {
+  .group2 {
     min-width: 180px;
     max-width: 200px;
     padding: 18px 12px;
   }
   
-  .group2.collapsed {
-    min-width: 65px;
-    max-width: 65px;
-  }
-  
   .sidebar-title {
     font-size: 20px;
-  }
-  
-  .group2.collapsed .sidebar-title {
-    font-size: 18px;
   }
   
   .category-menu .el-menu-item {
@@ -359,31 +375,17 @@ export default {
     height: 28px;
     font-size: 14px;
   }
-  
-  .menu-item-text-short {
-    font-size: 13px;
-  }
 }
 
 @media (max-width: 992px) {
-  .group2:not(.collapsed) {
+  .group2 {
     min-width: 160px;
     max-width: 180px;
     padding: 15px 10px;
   }
   
-  .group2.collapsed {
-    min-width: 60px;
-    max-width: 60px;
-    padding: 15px 6px;
-  }
-  
   .sidebar-title {
     font-size: 18px;
-  }
-  
-  .group2.collapsed .sidebar-title {
-    font-size: 16px;
   }
   
   .category-menu .el-menu-item {
@@ -397,10 +399,6 @@ export default {
     width: 26px;
     height: 26px;
     font-size: 13px;
-  }
-  
-  .menu-item-text-short {
-    font-size: 12px;
   }
 }
 
@@ -434,6 +432,7 @@ export default {
     right: 5px;
     font-size: 16px;
   }
+}
   
   .category-menu .el-menu-item {
     height: 40px;
@@ -457,20 +456,10 @@ export default {
     max-width: 180px !important;
   }
   
-  .group2.collapsed:hover .menu-item-text {
-    max-width: none;
-    text-overflow: clip;
-  }
-}
+
 
 @media (max-width: 576px) {
   .group2 {
-    min-width: 55px !important;
-    max-width: 55px !important;
-    padding: 10px 5px !important;
-  }
-  
-  .group2:not(.collapsed) {
     min-width: 160px !important;
     max-width: 160px !important;
     padding: 12px 8px !important;
@@ -478,11 +467,6 @@ export default {
   
   .sidebar-title {
     font-size: 14px;
-  }
-  
-  .group2.collapsed .sidebar-title {
-    font-size: 14px;
-    margin-bottom: 12px;
   }
   
   .category-menu .el-menu-item {
@@ -496,41 +480,17 @@ export default {
     height: 22px;
     font-size: 11px;
   }
-  
-  .menu-item-text-short {
-    font-size: 10px;
-  }
-  
-  .collapse-toggle {
-    font-size: 14px;
-    padding: 3px;
-  }
-  
-  .group2.collapsed:hover {
-    min-width: 160px !important;
-    max-width: 160px !important;
-  }
 }
 
 /* 超小屏幕设备：400px 以下 */
 @media (max-width: 400px) {
   .group2 {
-    min-width: 50px !important;
-    max-width: 50px !important;
-    padding: 8px 4px !important;
-  }
-  
-  .group2:not(.collapsed) {
     min-width: 140px !important;
     max-width: 140px !important;
     padding: 10px 6px !important;
   }
   
   .sidebar-title {
-    font-size: 12px;
-  }
-  
-  .group2.collapsed .sidebar-title {
     font-size: 12px;
   }
   
@@ -545,14 +505,16 @@ export default {
     height: 20px;
     font-size: 10px;
   }
-  
-  .menu-item-text-short {
-    font-size: 9px;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .menu-icon {
+    border: 1px solid #000;
   }
   
-  .group2.collapsed:hover {
-    min-width: 140px !important;
-    max-width: 140px !important;
+  .category-menu .el-menu-item.active {
+    border-left: 4px solid #000 !important;
   }
 }
 
@@ -593,29 +555,6 @@ export default {
   justify-content: center;
   padding: 0 10px !important;
 }
-
-/* 确保文本在折叠状态下可见 */
-.el-menu--collapse .el-menu-item .menu-item-text-short {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* 主内容区调整 */
-.group2.collapsed ~ .navigationgroup3 {
-  transition: margin-left 0.3s ease;
-}
-
-/* 高对比度模式支持 */
-@media (prefers-contrast: high) {
-  .menu-icon {
-    border: 1px solid #000;
-  }
-  
-  .category-menu .el-menu-item.active {
-    border-left: 4px solid #000 !important;
-  }
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   .group2,

@@ -181,8 +181,31 @@ export default {
     },
     
     handleSearch() {
-      // 搜索处理逻辑
-      console.log('搜索功能');
+      if (!this.searchQuery.trim()) {
+        this.$message.warning('请输入搜索关键词');
+        return;
+      }
+      
+      console.log('Header搜索关键词:', this.searchQuery);
+      
+      // 跳转到同城页面并传递搜索参数
+      if (this.$route.path !== '/tongcheng') {
+        // 如果不在同城页面，跳转到同城页面并传递搜索参数
+        this.$router.push({
+          path: '/tongcheng',
+          query: { search: this.searchQuery }
+        });
+      } else {
+        // 如果已经在同城页面，触发搜索事件
+        this.$emit('search', this.searchQuery);
+        
+        // 或者使用事件总线触发搜索
+        if (this.$bus) {
+          this.$bus.$emit('header-search', this.searchQuery);
+        }
+      }
+      
+      this.$message.success(`正在搜索: ${this.searchQuery}`);
     },
     
     isActiveNav(route) {

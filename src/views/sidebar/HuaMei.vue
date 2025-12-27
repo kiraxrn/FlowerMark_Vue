@@ -81,14 +81,17 @@
                 
                 <div class="product-meta">
                   <div class="price-section">
-                  <p class="price">
-                    <span v-if="product.seckillPrice" class="original-price">¥{{ (product.price || 0).toFixed(2) }}</span>
-                    <span :class="{'seckill-price': product.seckillPrice}">
-                      ¥{{ ((product.seckillPrice || product.price) || 0).toFixed(2) }}
-                    </span>
-                  </p>
-                  <p v-if="product.sales" class="sales">已售{{ product.sales }}件</p>
-                </div>
+                    <p class="price">
+                      <template v-if="product.isSeckill">
+                        <span class="original-price">¥{{ (product.price || 0).toFixed(2) }}</span>
+                        <span class="seckill-price">¥{{ (product.seckillPrice || 0).toFixed(2) }}</span>
+                      </template>
+                      <template v-else>
+                        <span>¥{{ (product.price || 0).toFixed(2) }}</span>
+                      </template>
+                    </p>
+                    <p v-if="product.sales" class="sales">已售{{ product.sales }}件</p>
+                  </div>
                 </div>
                 
                 <el-button 
@@ -329,7 +332,7 @@ export default {
           name: '画眉鸟 (成年公鸟)', 
           price: 280.0, 
           seckillPrice: 220.0,
-          imageUrl: 'https://img1.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           description: '健康成年公画眉鸟，鸣声洪亮，品相优良',
           sales: 25,
           isSeckill: true,
@@ -339,7 +342,7 @@ export default {
           id: 502, 
           name: '画眉幼鸟', 
           price: 150.0, 
-          imageUrl: 'https://img2.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=664&fit=crop',
           description: '健康活泼的画眉幼鸟，易于驯养',
           sales: 18
         },
@@ -347,7 +350,7 @@ export default {
           id: 503, 
           name: '精品画眉笼', 
           price: 120.0, 
-          imageUrl: 'https://img3.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=664&fit=crop',
           description: '优质竹制画眉笼，透气性好',
           sales: 32
         },
@@ -355,7 +358,7 @@ export default {
           id: 504, 
           name: '画眉专用饲料', 
           price: 35.0, 
-          imageUrl: 'https://img4.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=500&h=664&fit=crop',
           description: '营养均衡的画眉专用饲料',
           sales: 56
         },
@@ -363,7 +366,7 @@ export default {
           id: 505, 
           name: '画眉洗澡笼', 
           price: 65.0, 
-          imageUrl: 'https://img5.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=664&fit=crop',
           description: '专用洗澡笼，方便实用',
           sales: 24
         },
@@ -371,7 +374,7 @@ export default {
           id: 506, 
           name: '画眉保健砂', 
           price: 18.0, 
-          imageUrl: 'https://img6.baidu.com/it/u=456789012,456789012&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          imageUrl: 'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=500&h=664&fit=crop',
           description: '补充矿物质，促进消化',
           sales: 45
         },
@@ -523,8 +526,8 @@ export default {
 
 .product-link {
   display: block;
-  text-decoration: none;
-  color: inherit;
+  text-decoration: none;  
+  color: #e4393c;
   height: 100%;
 }
 

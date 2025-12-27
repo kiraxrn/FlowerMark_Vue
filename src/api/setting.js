@@ -2,7 +2,7 @@ import api, { isMockEnabled } from './config'
 
 // 获取用户信息
 export const getUserInfo = (userId) => {
-  const url = isMockEnabled() ? `/api/user/info?userId=${userId}` : `/user/info`
+  const url = isMockEnabled() ? `/user/info?userId=${userId}` : `/user/info`
   return api.get(url, {
     params: { userId }
   })
@@ -10,7 +10,7 @@ export const getUserInfo = (userId) => {
 
 // 用户登录
 export const login = (username, password) => {
-  const url = isMockEnabled() ? '/api/login' : '/login'
+  const url = isMockEnabled() ? '/login' : '/login'
   return api.post(url, {
     username,
     password
@@ -19,7 +19,7 @@ export const login = (username, password) => {
 
 // 用户注册
 export const register = (userData) => {
-  const url = isMockEnabled() ? '/api/register' : '/register'
+  const url = isMockEnabled() ? '/register' : '/register'
   return api.post(url, {
     userid: userData.userId,
     username: userData.username,
@@ -31,19 +31,19 @@ export const register = (userData) => {
 
 // 用户退出登录
 export const logout = () => {
-  const url = isMockEnabled() ? '/api/logout' : '/logout'
+  const url = isMockEnabled() ? '/logout' : '/logout'
   return api.post(url)
 }
 
 // 更新用户信息
 export const updateUserInfo = (userData) => {
-  const url = isMockEnabled() ? '/api/user/update' : '/user/update'
+  const url = isMockEnabled() ? '/user/update' : '/user/update'
   return api.put(url, userData)
 }
 
 // 修改密码
 export const changePassword = (oldPassword, newPassword) => {
-  const url = isMockEnabled() ? '/api/user/password' : '/user/change-password'
+  const url = isMockEnabled() ? '/user/password' : '/user/change-password'
   const userId = sessionStorage.getItem('userId') || '1001'
   return api.put(url, {
     userId,
@@ -54,7 +54,7 @@ export const changePassword = (oldPassword, newPassword) => {
 
 // 更新头像 - 支持多种参数格式
 export const uploadAvatar = (avatarData) => {
-  const url = isMockEnabled() ? '/api/user/avatar' : '/user/avatar'
+  const url = isMockEnabled() ? '/user/avatar' : '/user/avatar'
   const userId = sessionStorage.getItem('userId') || '1001'
   
   // 情况1：传递的是FormData对象（向后兼容）

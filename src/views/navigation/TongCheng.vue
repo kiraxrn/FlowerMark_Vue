@@ -81,7 +81,7 @@
           >
             <div class="commodity-image-container">
               <img 
-                :src="commodity.image || 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664'"
+                :src="commodity.image || 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop'"
                 :alt="commodity.name"
                 class="commodity-image"
               >
@@ -143,7 +143,7 @@
           description="暂无商品"
           class="empty-container"
         >
-          <el-button type="primary" @click="fetchCommodities">重新加载</el-button>
+          <el-button type="primary" @click="fetchAllCommodities">重新加载</el-button>
         </el-empty>
         
         <!-- 分页 -->
@@ -191,7 +191,8 @@ export default {
   data() {
     return {
       searchQuery: '',
-      commodities: [],
+      commodities: [],           // 当前显示的商品
+      allCommodities: [],        //所有商品数据
       loading: false,
       error: null,
       sortBy: '',
@@ -199,7 +200,8 @@ export default {
       categories: [],
       currentPage: 1,
       addingCartId: null,
-      pageSize: 12
+      pageSize: 12,
+      isSearching: false         // 标记是否正在搜索
     };
   },
   computed: {
@@ -238,8 +240,23 @@ export default {
     ...mapGetters('cart', ['checkedItems', 'checkedTotal']),
   },
   mounted() {
-    this.fetchCommodities();
+    this.fetchAllCommodities();  // 获取所有商品
     this.fetchUserInfoIfNeeded();
+    
+    // 检查URL中的搜索参数
+    this.handleUrlSearchParams();
+  },
+  
+  watch: {
+    '$route.query': {
+      handler(newQuery) {
+        if (newQuery.search) {
+          this.searchQuery = newQuery.search;
+          this.handleSearch();
+        }
+      },
+      immediate: true
+    }
   },
   methods: {
     ...mapActions('user', ['fetchUserInfo']),
@@ -264,149 +281,312 @@ export default {
       return Number(price).toFixed(2);
     },
     
-    async fetchCommodities() {
+    // 获取所有商品数据
+    async fetchAllCommodities() {
       this.loading = true;
       this.error = null;
       
       try {
-        console.log('=== TongCheng.vue 商品数据请求开始 ===');
-        console.log('TongCheng.vue 调用 commodityAPI.getRandomCommodities(12)');
+        console.log('=== 开始获取所有商品数据 ===');
         
-        // 使用随机商品API
-        const response = await commodityAPI.getRandomCommodities(12);
+        // 获取更多商品
+        const response = await commodityAPI.getCommodities();
         
-        console.log('TongCheng.vue API完整响应:', response); 
-        console.log('TongCheng.vue 响应类型:', typeof response);
-        console.log('TongCheng.vue 响应是否为对象:', response && typeof response === 'object');
+        console.log('API完整响应:', response);
         
-        // 检查响应结构
-        if (!response) {
-          console.error('TongCheng.vue API响应为空');
-          throw new Error('API响应为空');
-        }
+        // 处理响应数据
+        let allCommoditiesData = [];
         
-        // 根据实际的 API 响应结构调整
-        let commoditiesData = [];
-        
-        // 情况1: Mock API 直接返回 {list, pagination}
-        if (response.list && Array.isArray(response.list)) {
-          commoditiesData = response.list;
-          console.log('TongCheng.vue 使用 response.list, 数量:', commoditiesData.length);
-        } 
-        // 情况2: 包含 data 属性且 data 有 list
-        else if (response.data && response.data.list) {
-          commoditiesData = response.data.list;
-          console.log('TongCheng.vue 使用 data.list, 数量:', commoditiesData.length);
-        }
-        // 情况3: data 直接是数组
-        else if (Array.isArray(response.data)) {
-          commoditiesData = response.data;
-          console.log('TongCheng.vue 使用 data 数组, 数量:', commoditiesData.length);
-        }
-        // 情况4: 标准 API 格式
-        else if (response.code === 200 && response.data) {
-          console.log('TongCheng.vue 使用标准 API 格式，状态码:', response.code);
-          // 如果 data 是数组
+        // 根据不同的API响应结构处理
+        if (response && response.code === 200) {
+          // 标准API格式
           if (Array.isArray(response.data)) {
-            commoditiesData = response.data;
+            allCommoditiesData = response.data;
+          } else if (response.data && response.data.list && Array.isArray(response.data.list)) {
+            allCommoditiesData = response.data.list;
+          } else if (response.data && typeof response.data === 'object') {
+            // 如果是分页数据，提取列表
+            allCommoditiesData = response.data.records || response.data.items || [];
           }
-          // 如果 data 是对象且包含 list
-          else if (response.data.list) {
-            commoditiesData = response.data.list;
-          }
-          console.log('TongCheng.vue 使用标准 API 格式, 数量:', commoditiesData.length);
-        }
-        // 情况5: 响应本身就是数组
-        else if (Array.isArray(response)) {
-          commoditiesData = response;
-          console.log('TongCheng.vue 使用 response 数组, 数量:', commoditiesData.length);
-        }
-        else {
-          console.warn('TongCheng.vue 无法识别的响应结构:', response);
-          // 尝试提取任何可能的数据
-          commoditiesData = response.data || response.list || [];
-          console.log('TongCheng.vue 尝试提取数据, 数量:', commoditiesData.length);
-        }
-        
-        this.commodities = commoditiesData;
-        console.log('TongCheng.vue 最终商品数据:', this.commodities);
-        console.log('TongCheng.vue 商品数据结构:', {
-          数量: this.commodities.length,
-          第一个商品: this.commodities[0] || null,
-          商品字段: this.commodities[0] ? Object.keys(this.commodities[0]) : []
-        });
-        
-        // 从商品数据中提取分类
-        if (this.commodities.length > 0) {
-          const uniqueCategories = [...new Set(this.commodities.map(item => item.category))].filter(Boolean);
-          this.categories = uniqueCategories;
-          console.log('TongCheng.vue 提取的分类:', this.categories);
+        } else if (Array.isArray(response)) {
+          // 直接返回数组
+          allCommoditiesData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          allCommoditiesData = response.data;
+        } else if (response && response.list && Array.isArray(response.list)) {
+          allCommoditiesData = response.list;
         } else {
-          console.warn('TongCheng.vue 商品列表为空');
-          this.$message.warning('暂无商品数据');
+          // 尝试提取数据
+          allCommoditiesData = response?.data || response?.list || [];
+          if (!Array.isArray(allCommoditiesData)) {
+            allCommoditiesData = [];
+          }
         }
+        
+        // 保存所有商品数据
+        this.allCommodities = allCommoditiesData;
+        console.log('获取到的所有商品数量:', this.allCommodities.length);
+        
+        // 初始显示随机商品
+        if (this.allCommodities.length > 0) {
+          // 随机选择商品显示
+          this.commodities = this.getRandomItems(this.allCommodities, 12);
+          
+          // 提取分类
+          const uniqueCategories = [...new Set(this.allCommodities.map(item => item.category))].filter(Boolean);
+          this.categories = uniqueCategories;
+          console.log('提取的分类:', this.categories);
+        } else {
+          console.warn('商品列表为空');
+          this.$message.warning('暂无商品数据');
+          // 使用本地Mock数据
+          this.useLocalMockData();
+        }
+        
       } catch (err) {
-        console.error('TongCheng.vue 获取商品数据失败:', err);
-        console.error('TongCheng.vue 错误详情:', {
-          消息: err.message,
-          堆栈: err.stack,
-          响应: err.response
-        });
+        console.error('获取商品数据失败:', err);
         this.error = '获取商品数据失败，请稍后重试';
         
         // 使用本地 Mock 数据
-        console.log('TongCheng.vue 使用本地 Mock 数据作为回退');
+        console.log('使用本地 Mock 数据作为回退');
         this.useLocalMockData();
         this.$message.error('网络错误，使用本地数据');
       } finally {
-        console.log('=== TongCheng.vue 商品数据请求结束 ===');
         this.loading = false;
-        console.log('TongCheng.vue 商品加载完成，loading状态:', this.loading);
+        console.log('=== 商品数据请求结束 ===');
       }
     },
     
-    async fetchUserInfo() {
-      try {
-        const userId = sessionStorage.getItem('userId');
-        if (userId && this.$store.state.user.userInfo) {
-          await this.fetchUserInfo();
-        }
-      } catch (err) {
-        console.error('获取用户信息失败:', err);
+    // 从数组中随机获取指定数量的项目
+    getRandomItems(array, count) {
+      if (array.length <= count) {
+        return [...array];
       }
+      
+      const shuffled = [...array].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
     },
     
     async handleSearch() {
       if (!this.searchQuery.trim()) {
-        await this.fetchCommodities();
+        // 清空搜索，显示随机商品
+        this.isSearching = false;
+        if (this.allCommodities.length > 0) {
+          this.commodities = this.getRandomItems(this.allCommodities, 12);
+          this.$message.success('已显示随机商品');
+        }
+        this.currentPage = 1;
         return;
       }
 
       this.loading = true;
+      this.isSearching = true;
+      
       try {
-        const response = await commodityAPI.searchCommodities(this.searchQuery);
+        console.log('=== 开始搜索 ===');
+        console.log('搜索关键词:', this.searchQuery);
         
-        if (response.code === 200) {
-          this.commodities = response.data || [];
-          this.$message.success(`找到 ${response.data.length} 个相关商品`);
-        } else {
-          this.error = response.message || '搜索失败';
-          this.$message.error('搜索失败');
+        let searchResults = [];
+        
+        // 首先尝试调用API搜索
+        try {
+          const response = await commodityAPI.searchCommodities(this.searchQuery);
+          console.log('API搜索响应完整结构:', JSON.stringify(response, null, 2));
+          
+          // 简化响应处理逻辑
+          let rawResults = [];
+          if (response && response.code === 200) {
+            // 处理mock数据格式（commodityMock.js返回的格式）
+            if (Array.isArray(response.data)) {
+              rawResults = response.data;  // 直接使用data数组
+            } else if (response.data && Array.isArray(response.data.list)) {
+              rawResults = response.data.list;  // 使用data.list数组
+            } else if (response.data && typeof response.data === 'object') {
+              // 如果是分页数据，尝试提取
+              const possibleList = response.data.list || response.data.records || response.data.items;
+              if (Array.isArray(possibleList)) {
+                rawResults = possibleList;
+              }
+            }
+          } else {
+            // 如果没有code字段，直接检查数据
+            if (Array.isArray(response)) {
+              rawResults = response;
+            } else if (response && Array.isArray(response.list)) {
+              rawResults = response.list;
+            } else if (response && Array.isArray(response.data)) {
+              rawResults = response.data;
+            }
+          }
+          
+          console.log('从API提取的原始结果数量:', rawResults.length);
+          
+          // 关键修改：验证搜索结果是否真的包含搜索关键词
+          if (rawResults.length > 0) {
+            searchResults = this.filterBySearchTerm(rawResults, this.searchQuery);
+            console.log('过滤后的有效结果数量:', searchResults.length);
+            
+            // 如果API结果不包含关键词，使用本地搜索
+            if (searchResults.length === 0 && this.allCommodities.length > 0) {
+              console.log('API结果不包含关键词，使用本地搜索');
+              searchResults = this.performAccurateLocalSearch(this.searchQuery);
+            }
+          } else {
+            // API返回空结果，使用本地搜索
+            console.log('API返回空结果，使用本地搜索');
+            if (this.allCommodities.length > 0) {
+              searchResults = this.performAccurateLocalSearch(this.searchQuery);
+            }
+          }
+          
+        } catch (apiError) {
+          console.warn('API搜索失败，使用本地搜索:', apiError);
+          // API搜索失败，使用本地搜索
+          if (this.allCommodities.length > 0) {
+            searchResults = this.performAccurateLocalSearch(this.searchQuery);
+          }
         }
+        
+        // 确保是数组
+        this.commodities = Array.isArray(searchResults) ? searchResults : [];
+        
+        // 调试：检查第一个结果的字段
+        if (this.commodities.length > 0) {
+          console.log('第一个搜索结果的字段:', Object.keys(this.commodities[0]));
+          console.log('第一个搜索结果内容:', this.commodities[0]);
+        }
+        
+        if (this.commodities.length > 0) {
+          this.$message.success(`找到 ${this.commodities.length} 个相关商品`);
+          
+          // 调试信息 - 检查匹配原因
+          console.log('搜索结果详情 (检查匹配项):');
+          this.commodities.forEach((item, index) => {
+            const name = item.name || '';
+            const desc = item.description || '';
+            const category = item.category || '';
+            
+            // 检查是否包含搜索词
+            const hasMatch = name.includes(this.searchQuery) || 
+                            desc.includes(this.searchQuery) || 
+                            category.includes(this.searchQuery);
+            
+            console.log(`${index + 1}. ${name} (分类: ${category}) - 匹配: ${hasMatch}`);
+          });
+        } else {
+          this.$message.info('未找到相关商品');
+        }
+        
+        // 重置分页到第一页
+        this.currentPage = 1;
+        
       } catch (err) {
         console.error('搜索失败:', err);
         this.error = '搜索失败，请稍后重试';
-        this.$message.error('搜索失败');
+        this.$message.error('搜索失败，请检查网络连接');
       } finally {
         this.loading = false;
+        console.log('=== 搜索结束 ===');
       }
     },
     
-    handleQuickView(commodity) {
-      // 保存到Vuex
-      this.setCurrentProduct(commodity);
+    // 新增：验证搜索结果是否包含关键词
+    filterBySearchTerm(items, searchTerm) {
+      if (!searchTerm || !searchTerm.trim()) return items;
       
-      // 手动跳转到商品详情页
+      const term = searchTerm.trim().toLowerCase();
+      return items.filter(item => {
+        const name = item.name ? item.name.toLowerCase() : '';
+        const description = item.description ? item.description.toLowerCase() : '';
+        const category = item.category ? item.category.toLowerCase() : '';
+        
+        return name.includes(term) || 
+               description.includes(term) || 
+               category.includes(term);
+      });
+    },
+    
+    // 精确的本地搜索
+    performAccurateLocalSearch(searchQuery) {
+      if (!searchQuery || !searchQuery.trim()) {
+        return [];
+      }
+      
+      const searchTerm = searchQuery.trim().toLowerCase();
+      
+      // 使用所有商品数据进行搜索
+      const allCommodities = this.allCommodities;
+      
+      if (allCommodities.length === 0) {
+        console.warn('没有可用于搜索的商品数据');
+        return [];
+      }
+      
+      // 创建匹配项数组
+      const matchesWithScores = [];
+      
+      allCommodities.forEach(item => {
+        let matchScore = 0;
+        let matchType = '';
+        
+        const name = item.name ? item.name.toLowerCase() : '';
+        const description = item.description ? item.description.toLowerCase() : '';
+        const category = item.category ? item.category.toLowerCase() : '';
+        
+        // 1. 精确匹配名称（最高优先级）
+        if (name === searchTerm) {
+          matchScore = 100;
+          matchType = 'exactName';
+        }
+        // 2. 名称包含搜索词
+        else if (name.includes(searchTerm)) {
+          const matchIndex = name.indexOf(searchTerm);
+          const positionScore = Math.max(0, 50 - matchIndex);
+          matchScore = 50 + positionScore;
+          matchType = 'nameContains';
+        }
+        // 3. 描述包含搜索词
+        else if (description && description.includes(searchTerm)) {
+          matchScore = 20;
+          matchType = 'descriptionContains';
+        }
+        // 4. 分类包含搜索词
+        else if (category && category.includes(searchTerm)) {
+          matchScore = 10;
+          matchType = 'categoryContains';
+        }
+        
+        // 如果有匹配，添加到结果中
+        if (matchScore > 0) {
+          matchesWithScores.push({
+            item,
+            matchScore,
+            matchType
+          });
+        }
+      });
+      
+      // 按分数降序排序
+      matchesWithScores.sort((a, b) => b.matchScore - a.matchScore);
+      
+      console.log(`本地搜索 "${searchTerm}" 结果:`, {
+        搜索总商品数: allCommodities.length,
+        匹配数量: matchesWithScores.length,
+        前几个匹配项: matchesWithScores.slice(0, 3).map(m => ({
+          商品名: m.item.name,
+          分数: m.matchScore,
+          类型: m.matchType
+        }))
+      });
+      
+      // 提取商品对象
+      const finalResults = matchesWithScores.map(match => match.item);
+      
+      return finalResults;
+    },
+    
+    handleQuickView(commodity) {
+      this.setCurrentProduct(commodity);
       this.$router.push({
         name: 'ProductDetail',
         params: { productId: commodity.id.toString() }
@@ -415,7 +595,6 @@ export default {
     
     async handleAddToCart(product) {
       try {
-        // 先检查用户是否登录
         const userId = sessionStorage.getItem('userId');
         if (!userId) {
           this.$message.warning('请先登录');
@@ -423,10 +602,8 @@ export default {
           return;
         }
         
-        // 设置加载状态
         this.addingCartId = product.id;
         
-        // 构建商品数据
         const cartItem = {
           id: product.id,
           name: product.name,
@@ -437,9 +614,7 @@ export default {
           description: product.description || ''
         };
         
-        // 使用 Vuex action
         await this.$store.dispatch('cart/addToCart', cartItem);
-        
         this.$message.success('商品已添加到购物车');
       } catch (error) {
         console.error('添加到购物车失败:', error);
@@ -472,10 +647,27 @@ export default {
       this.categoryFilter = '';
       this.searchQuery = '';
       this.currentPage = 1;
-      this.fetchCommodities();
+      this.isSearching = false;
+      
+      // 重置为显示随机商品
+      if (this.allCommodities.length > 0) {
+        this.commodities = this.getRandomItems(this.allCommodities, 12);
+        this.$message.success('已重置筛选条件');
+      } else {
+        this.fetchAllCommodities();
+      }
     },
     
-    // 添加本地 Mock 数据 fallback
+    handleUrlSearchParams() {
+      const searchParam = this.$route.query.search;
+      if (searchParam) {
+        this.searchQuery = searchParam;
+        this.$nextTick(() => {
+          this.handleSearch();
+        });
+      }
+    },
+    
     useLocalMockData() {
       const localMockCommodities = [
         {
@@ -484,7 +676,7 @@ export default {
           price: 199,
           category: '鲜花',
           categoryId: 1,
-          image: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           description: '新鲜红玫瑰花束，寓意爱情',
           sales: 100,
           stock: 50
@@ -495,7 +687,7 @@ export default {
           price: 159,
           category: '鲜花',
           categoryId: 1,
-          image: 'https://img2.baidu.com/it/u=123456789,987654321&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+          image: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop',
           description: '清新百合花，象征纯洁',
           sales: 80,
           stock: 30
@@ -506,20 +698,46 @@ export default {
           price: 89,
           category: '鲜花',
           categoryId: 1,
-          image: 'https://img2.baidu.com/it/u=234567890,876543210&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+          image: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=500&fit=crop',
           description: '温馨康乃馨，适合送母亲',
           sales: 60,
           stock: 40
+        },
+        // 添加更多Mock数据，确保搜索有足够数据
+        {
+          id: 4,
+          name: '蓝色妖姬',
+          price: 299,
+          category: '鲜花',
+          categoryId: 1,
+          image: 'https://images.unsplash.com/photo-1578948856697-db91d246b7b1?w=500&h=500&fit=crop',
+          description: '特别染色的蓝色玫瑰',
+          sales: 45,
+          stock: 25
+        },
+        {
+          id: 5,
+          name: '向日葵',
+          price: 129,
+          category: '鲜花',
+          categoryId: 1,
+          image: 'https://images.unsplash.com/photo-1597848212624-e19d0da7f5b3?w=500&h=500&fit=crop',
+          description: '阳光明媚的向日葵',
+          sales: 75,
+          stock: 35
         }
       ];
       
-      this.commodities = localMockCommodities;
+      this.allCommodities = localMockCommodities;
+      this.commodities = this.getRandomItems(localMockCommodities, 12);
       const uniqueCategories = [...new Set(localMockCommodities.map(item => item.category))].filter(Boolean);
       this.categories = uniqueCategories;
     }
   }
-};
+}
 </script>
+
+
 
 <style scoped>
 @import '../../assets/css/navigation.css';

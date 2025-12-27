@@ -246,35 +246,35 @@ export default {
         },
         { 
           name: '头像1', 
-          url: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' 
+          url: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop' 
         },
         { 
           name: '头像2', 
-          url: 'https://img2.baidu.com/it/u=1892949080,2296077444&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像3', 
-          url: 'https://img0.baidu.com/it/u=4288273630,1324471160&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像4', 
-          url: 'https://img1.baidu.com/it/u=1647487689,1546962565&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像5', 
-          url: 'https://img2.baidu.com/it/u=3007370618,100367014&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像6', 
-          url: 'https://img0.baidu.com/it/u=203394933,2596768314&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像7', 
-          url: 'https://img1.baidu.com/it/u=178389566,4186652059&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=500&fit=crop' 
         },
         { 
           name: '头像8', 
-          url: 'https://img0.baidu.com/it/u=3955183557,1739359977&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' 
+          url: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop' 
         }
       ]
     }

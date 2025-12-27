@@ -226,7 +226,7 @@ export default {
         active: true
       },
       seckillProducts: [],
-      defaultImg: 'https://img.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+      defaultImg: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
       currentPage: 1,
       pageSize: 8,
       totalCount: 0,
@@ -319,7 +319,7 @@ export default {
           comName: '红玫瑰花束',
           comPrice: 199.00,
           seckillPrice: 149.00,
-          comPicture: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          comPicture: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           stock: 5,
           total: 20,
           loading: false
@@ -329,7 +329,7 @@ export default {
           comName: '康乃馨花束',
           comPrice: 89.00,
           seckillPrice: 69.00,
-          comPicture: 'https://img2.baidu.com/it/u=234567890,876543210&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+          comPicture: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=500&fit=crop',
           stock: 3,
           total: 15,
           loading: false
@@ -739,7 +739,7 @@ export default {
 
 .product-link {
   text-decoration: none;
-  color: inherit;
+  color: #e4393c;
   display: block;
 }
 

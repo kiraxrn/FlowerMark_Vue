@@ -19,29 +19,72 @@
 
     <!-- 商品网格 -->
     <div class="products-grid">
-      <div class="product-item" v-for="product in displayedProducts" :key="product.id">
-        <el-card class="product-card" shadow="hover">
-          <div class="product-link" @click="handleProductClick(product)">
-            <div class="product-image">
-              <img :src="product.image" :alt="product.name">
-            </div>
-            <div class="product-info">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <div class="product-meta">
-                <p class="price">¥{{ product.price.toFixed(2) }}</p>
+      <el-card 
+        v-for="product in displayedProducts" 
+        :key="product.id"
+        class="product-card"
+        :body-style="{ padding: '15px' }"
+        shadow="hover"
+      >
+        <div class="product-link" @click="handleProductClick(product)">
+          <div class="product-image">
+            <el-image 
+              :src="product.imageUrl || product.image" 
+              :alt="product.name"
+              fit="cover"
+              class="product-img"
+              lazy
+            >
+              <div slot="error" class="image-error">
+                <i class="el-icon-picture-outline"></i>
+                <span>加载失败</span>
               </div>
-              <el-button 
-                type="success" 
-                icon="el-icon-shopping-cart-1" 
-                @click.stop="addToCart(product)"
-                class="cart-btn"
-              >
-                加入购物车
-              </el-button>
+              <div slot="placeholder" class="image-loading">
+                <i class="el-icon-loading"></i>
+              </div>
+            </el-image>
+            
+            <!-- 商品标签 -->
+            <div v-if="product.isSeckill || product.isNew" class="product-tags">
+              <el-tag v-if="product.isSeckill" type="danger" size="mini">秒杀</el-tag>
+              <el-tag v-if="product.isNew" type="success" size="mini">新品</el-tag>
             </div>
           </div>
-        </el-card>
-      </div>
+          
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            
+            <div class="product-description" v-if="product.description">
+              <p>{{ product.description }}</p>
+            </div>
+            
+            <div class="product-meta">
+              <div class="price-section">
+                <p class="price">
+                  <template v-if="product.isSeckill">
+                    <span class="original-price">¥{{ (product.price || 0).toFixed(2) }}</span>
+                    <span class="seckill-price">¥{{ (product.seckillPrice || 0).toFixed(2) }}</span>
+                  </template>
+                  <template v-else>
+                    <span>¥{{ (product.price || 0).toFixed(2) }}</span>
+                  </template>
+                </p>
+                <p v-if="product.sales" class="sales">已售{{ product.sales }}件</p>
+              </div>
+            </div>
+            
+            <el-button 
+              type="success" 
+              class="cart-btn"
+              @click.stop="addToCart(product)"
+              icon="el-icon-shopping-cart-1"
+              size="small"
+            >
+              加入购物车
+            </el-button>
+          </div>
+        </div>
+      </el-card>
     </div>
     <!-- 分页 -->
     <div v-if="displayedProducts.length > 0" class="pagination-section">
@@ -283,12 +326,12 @@
       // 备用数据
       useFallbackData() {
         return [
-          { id: 401, name: '玫瑰种子 (混合色)', price: 15.8, imageUrl: 'https://img1.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 402, name: '向日葵种子', price: 12.5, imageUrl: 'https://img2.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 403, name: '薰衣草种子', price: 18.0, imageUrl: 'https://img3.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 404, name: '康乃馨种子', price: 14.9, imageUrl: 'https://img4.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 405, name: '百合花种子', price: 22.0, imageUrl: 'https://img5.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 406, name: '多肉植物种子套装', price: 35.0, imageUrl: 'https://img6.baidu.com/it/u=345678901,345678901&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
+          { id: 401, name: '玫瑰种子 (混合色)', price: 15.8, imageUrl: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop' },
+          { id: 402, name: '向日葵种子', price: 12.5, imageUrl: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=664&fit=crop' },
+          { id: 403, name: '薰衣草种子', price: 18.0, imageUrl: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=664&fit=crop' },
+          { id: 404, name: '康乃馨种子', price: 14.9, imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=500&h=664&fit=crop' },
+          { id: 405, name: '百合花种子', price: 22.0, imageUrl: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=664&fit=crop' },
+          { id: 406, name: '多肉植物种子套装', price: 35.0, imageUrl: 'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=500&h=664&fit=crop' },
         ]
       },
     }
@@ -392,25 +435,20 @@
   margin-top: 20px;
 }
 
-.product-item {
-  transition: transform 0.3s;
-}
-
-.product-item:hover {
-  transform: translateY(-5px);
-}
-
 .product-card {
-  border-radius: 8px;
-  overflow: hidden;
   height: 100%;
-  border: none;
+  transition: transform 0.3s;
+  border-radius: 8px;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
 }
 
 .product-link {
   display: block;
   text-decoration: none;
-  color: inherit;
+  color: #e4393c;
   height: 100%;
 }
 
@@ -419,21 +457,47 @@
   width: 100%;
   height: 200px;
   overflow: hidden;
+  border-radius: 6px 6px 0 0;
 }
 
-.product-image img {
+.product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
 }
 
-.product-card:hover .product-image img {
+.product-card:hover .product-img {
   transform: scale(1.05);
 }
 
+.image-error,
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f5f5f5;
+  color: #999;
+}
+
+.image-error i,
+.image-loading i {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.product-tags {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 5px;
+}
+
 .product-info {
-  padding: 15px;
+  padding: 15px 0 0;
 }
 
 .product-name {
@@ -445,21 +509,52 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 44px;
   line-height: 1.4;
+  height: 44px;
+}
+
+.product-description {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .product-meta {
+  margin-bottom: 15px;
+}
+
+.price-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
 }
 
 .price {
   color: #e4393c;
   font-weight: bold;
   font-size: 18px;
+  margin: 0;
+}
+
+.original-price {
+  color: #999;
+  font-size: 14px;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
+
+.seckill-price {
+  color: #e4393c;
+}
+
+.sales {
+  color: #999;
+  font-size: 12px;
   margin: 0;
 }
 

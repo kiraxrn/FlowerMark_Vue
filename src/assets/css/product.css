@@ -76,8 +76,7 @@
   
   .product-image {
     flex: 1;
-    padding-right: 1.5rem;
-  }
+}
   
   .main-image {
     width: 100%;

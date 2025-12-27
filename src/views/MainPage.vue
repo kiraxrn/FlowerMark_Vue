@@ -11,9 +11,9 @@
       
       <el-container class="main-content">
         <!-- 侧边栏 -->
-        <el-aside width="200px" class="custom-aside">
+    
             <AppSidebar />
-        </el-aside>
+        
         
         <el-container>
           <!-- 主内容区 -->
@@ -122,17 +122,16 @@ export default {
       username: null,
       searchQuery: '',
       carouselImages: [
-        'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
-        require('../assets/img/pexels-aditya-aiyar-615049-1407325.jpg'),
-        require('../assets/img/pexels-billelmoula-542517.jpg'),
-        require('../assets/img/pexels-hieu-641561.jpg'),
-        require('../assets/img/pexels-pixabay-46166.jpg'),
-        require('../assets/img/pexels-roshan-kamath-793618-1661179.jpg'),
-        require('../assets/img/pexels-suzyhazelwood-1578105.jpg'),
+        'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=800&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=800&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=800&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=800&h=300&fit=crop',
       ],
       currentSlide: 0,
       commodities: [],
-      defaultImage: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+      defaultImage: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
       showAll: false,
       loading: false
     };
@@ -252,7 +251,7 @@ export default {
         
         if (process.env.NODE_ENV === 'development') {
           this.username = '测试用户';
-          this.userpicture = 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664';
+          this.userpicture = 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop';
         }
       }
     },
@@ -263,14 +262,14 @@ export default {
           id: 1,
           name: '红玫瑰花束',
           price: 99.99,
-          image: 'https://img2.baidu.com/it/u=123456789,987654321&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+          image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           sales: 156
         },
         {
           id: 2,
           name: '白百合花束',
           price: 149.99,
-          image: 'https://img2.baidu.com/it/u=123456789,987654321&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+          image: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop',
           sales: 89
         },
         { 
@@ -463,7 +462,7 @@ export default {
   flex-direction: column;
   height: 100%;
   text-decoration: none;
-  color: inherit;
+  color: #e4393c;
 }
 
 /* 图片容器 */

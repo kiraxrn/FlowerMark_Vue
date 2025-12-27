@@ -99,7 +99,8 @@ export default {
   name: 'ShoppingCart',
   data() {
     return {
-      defaultImage: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664'
+      defaultImage: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
+      paying: false // 支付状态
     }
   },
   computed: {
@@ -130,9 +131,9 @@ export default {
     },
     
     // 结算
-    checkout() {
+    async checkout() {
       if (this.checkedItems.length === 0) {
-        alert('请选择要购买的商品')
+        this.$message.warning('请选择要购买的商品')
         return
       }
       
@@ -140,14 +141,96 @@ export default {
       const itemNames = selectedItems.map(item => item.name).join(', ')
       const total = this.checkedTotal
       
-      if (confirm(`确认购买以下商品吗？\n${itemNames}\n\n总计: ¥${total.toFixed(2)}`)) {
-        alert(`支付成功！已支付 ¥${total.toFixed(2)}`)
+      try {
+        // 显示支付确认对话框
+        await this.$confirm(
+          `确认购买以下商品吗？\n\n${itemNames}\n\n总计: ¥${total.toFixed(2)}`,
+          '确认支付',
+          {
+            confirmButtonText: '确认支付',
+            cancelButtonText: '取消',
+            type: 'warning',
+            center: true
+          }
+        )
         
-        // 移除已购买的商品（选中的商品）
+        // 开始支付
+        this.paying = true
+        
+        // 模拟支付过程
+        await this.simulatePayment(total)
+        
+        // 支付成功
+        await this.showPaymentSuccess(total, selectedItems)
+        
+        // 移除已购买的商品
         selectedItems.forEach(item => {
           this.removeFromCart(item.id)
         })
+        
+      } catch (error) {
+        if (error === 'cancel') {
+          this.$message.info('已取消支付')
+        } else {
+          console.error('支付失败:', error)
+          this.$message.error('支付失败，请重试')
+        }
+      } finally {
+        this.paying = false
       }
+    },
+    
+    // 模拟支付过程
+    simulatePayment(amount) {
+      return new Promise((resolve) => {
+        // 显示支付中提示
+        const loading = this.$loading({
+          lock: true,
+          text: `正在支付 ¥${amount.toFixed(2)}...`,
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        })
+        
+        // 模拟支付处理时间
+        setTimeout(() => {
+          loading.close()
+          resolve()
+        }, 2000)
+      })
+    },
+    
+    // 显示支付成功弹窗
+    showPaymentSuccess(amount, items) {
+      return new Promise((resolve) => {
+        this.$alert(
+          `<div style="text-align: center;">
+            <i class="el-icon-success" style="color: #67C23A; font-size: 48px; margin-bottom: 16px;"></i>
+            <h3 style="color: #67C23A; margin: 16px 0;">支付成功！</h3>
+            <p style="font-size: 18px; margin: 8px 0;">支付金额：<strong>¥${amount.toFixed(2)}</strong></p>
+            <p style="color: #666; margin: 8px 0;">购买商品：${items.map(item => item.name).join('、')}</p>
+            <p style="color: #999; font-size: 14px; margin-top: 16px;">订单将在24小时内发货，请注意查收</p>
+          </div>`,
+          '支付成功',
+          {
+            dangerouslyUseHTMLString: true,
+            showConfirmButton: true,
+            confirmButtonText: '继续购物',
+            showCancelButton: true,
+            cancelButtonText: '查看订单',
+            type: 'success',
+            center: true,
+            callback: (action) => {
+              if (action === 'confirm') {
+                this.$router.push('/main')
+              } else if (action === 'cancel') {
+                // 这里可以跳转到订单页面
+                this.$message.info('订单页面开发中...')
+              }
+              resolve()
+            }
+          }
+        )
+      })
     }
   }
 }

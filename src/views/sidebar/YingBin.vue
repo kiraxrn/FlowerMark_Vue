@@ -26,33 +26,73 @@
 
     <!-- 商品网格 -->
     <div v-else class="products-grid">
-      <div class="product-item" v-for="product in displayedProducts" :key="product.id">
-        <el-card class="product-card" :padding="0" shadow="hover">
-          <div class="product-link" @click="handleProductClick(product)">
-            <div class="product-image">
-              <img :src="product.image || defaultImage" :alt="product.name">
-              <div v-if="product.sales > 100" class="hot-badge">热销</div>
-            </div>
-            <div class="product-info">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-description">{{ product.description }}</p>
-              <div class="product-meta">
-                <p class="price">¥{{ product.price.toFixed(2) }}</p>
-                <p class="sales">销量: {{ product.sales }}</p>
+      <el-card 
+        v-for="product in displayedProducts" 
+        :key="product.id"
+        class="product-card"
+        :body-style="{ padding: '15px' }"
+        shadow="hover"
+      >
+        <div class="product-link" @click="handleProductClick(product)">
+          <div class="product-image">
+            <el-image 
+              :src="product.imageUrl || product.image || defaultImage" 
+              :alt="product.name"
+              fit="cover"
+              class="product-img"
+              lazy
+            >
+              <div slot="error" class="image-error">
+                <i class="el-icon-picture-outline"></i>
+                <span>加载失败</span>
               </div>
-              <el-button 
-                type="success" 
-                long 
-                icon="el-icon-shopping-cart-1" 
-                @click.stop="addToCart(product)"
-                :loading="addingCartId === product.id"
-              >
-                {{ addingCartId === product.id ? '添加中...' : '加入购物车' }}
-              </el-button>
+              <div slot="placeholder" class="image-loading">
+                <i class="el-icon-loading"></i>
+              </div>
+            </el-image>
+            
+            <!-- 商品标签 -->
+            <div v-if="product.isSeckill || product.isNew" class="product-tags">
+              <el-tag v-if="product.isSeckill" type="danger" size="mini">秒杀</el-tag>
+              <el-tag v-if="product.isNew" type="success" size="mini">新品</el-tag>
             </div>
           </div>
-        </el-card>
-      </div>
+          
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            
+            <div class="product-description" v-if="product.description">
+              <p>{{ product.description }}</p>
+            </div>
+            
+            <div class="product-meta">
+              <div class="price-section">
+                <p class="price">
+                  <template v-if="product.isSeckill">
+                    <span class="original-price">¥{{ (product.price || 0).toFixed(2) }}</span>
+                    <span class="seckill-price">¥{{ (product.seckillPrice || 0).toFixed(2) }}</span>
+                  </template>
+                  <template v-else>
+                    <span>¥{{ (product.price || 0).toFixed(2) }}</span>
+                  </template>
+                </p>
+                <p v-if="product.sales" class="sales">已售{{ product.sales }}件</p>
+              </div>
+            </div>
+            
+            <el-button 
+              type="success" 
+              class="cart-btn"
+              @click.stop="addToCart(product)"
+              icon="el-icon-shopping-cart-1"
+              size="small"
+              :loading="addingCartId === product.id"
+            >
+              {{ addingCartId === product.id ? '添加中...' : '加入购物车' }}
+            </el-button>
+          </div>
+        </div>
+      </el-card>
     </div>
 
     <!-- 空状态 -->
@@ -103,7 +143,7 @@ export default {
       addingCartId: null,
       
       // 默认图片
-      defaultImage: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664'
+      defaultImage: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop'
     };
   },
   computed: {
@@ -343,7 +383,7 @@ export default {
           id: 101,
           name: '富贵竹 (5支)',
           price: 29.9,
-          image: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=500&h=664&fit=crop',
           description: '象征富贵吉祥，适合迎宾摆放',
           sales: 156,
           categoryId: 1
@@ -352,7 +392,7 @@ export default {
           id: 102,
           name: '百合花束 (白色, 2头)',
           price: 45.0,
-          image: 'https://img2.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=664&fit=crop',
           description: '纯洁高雅，迎宾首选',
           sales: 89,
           categoryId: 1
@@ -361,7 +401,7 @@ export default {
           id: 103,
           name: '康乃馨花束 (19支)',
           price: 59.9,
-          image: 'https://img3.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&h=664&fit=crop',
           description: '温馨祝福，适合各种场合',
           sales: 234,
           categoryId: 1
@@ -370,7 +410,7 @@ export default {
           id: 104,
           name: '向日葵花束 (3支)',
           price: 35.8,
-          image: 'https://img4.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           description: '阳光热情，给人温暖感觉',
           sales: 178,
           categoryId: 1
@@ -379,7 +419,7 @@ export default {
           id: 105,
           name: '开业花篮 (一对)',
           price: 198.0,
-          image: 'https://img5.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=664&fit=crop',
           description: '大气豪华，开业庆典专用',
           sales: 67,
           categoryId: 1
@@ -388,7 +428,7 @@ export default {
           id: 106,
           name: '蝴蝶兰盆栽 (单株)',
           price: 88.0,
-          image: 'https://img6.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664',
+          image: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=664&fit=crop',
           description: '高贵典雅，长期摆放',
           sales: 92,
           categoryId: 1
@@ -397,7 +437,7 @@ export default {
           id: 107,
           name: '红掌盆栽',
           price: 65.0,
-          image: '',
+          image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop',
           description: '热情似火，迎宾佳品',
           sales: 145,
           categoryId: 1
@@ -406,7 +446,7 @@ export default {
           id: 108,
           name: '发财树盆栽',
           price: 128.0,
-          image: '',
+          image: 'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=500&h=664&fit=crop',
           description: '招财进宝，寓意美好',
           sales: 203,
           categoryId: 1
@@ -420,33 +460,33 @@ export default {
 <style scoped>
 /* 分类页面特定样式 */
 .classify-content {
-padding: 20px;
-background: #ffdcdc;
-border-radius: 8px;
-min-height: 600px;
+  padding: 20px;
+  background: #ffdcdc;
+  border-radius: 8px;
+  min-height: 600px;
 }
 
 .classify-content h2 {
-color: #333;
-margin-bottom: 10px;
-font-size: 24px;
-border-left: 4px solid #19be6b;
-padding-left: 10px;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 24px;
+  border-left: 4px solid #19be6b;
+  padding-left: 10px;
 }
 
 .breadcrumbs {
-font-size: 14px;
-color: #666;
-margin: 10px 0 20px;
+  font-size: 14px;
+  color: #666;
+  margin: 10px 0 20px;
 }
 
 .breadcrumbs a {
-color: #4CAF50;
-text-decoration: none;
+  color: #4CAF50;
+  text-decoration: none;
 }
 
 .breadcrumbs a:hover {
-text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* 筛选区域 */
@@ -536,24 +576,20 @@ text-decoration: underline;
   margin-top: 20px;
 }
 
-.product-item {
-  transition: transform 0.3s;
-}
-
-.product-item:hover {
-  transform: translateY(-5px);
-}
-
 .product-card {
-  border-radius: 8px;
-  overflow: hidden;
   height: 100%;
+  transition: transform 0.3s;
+  border-radius: 8px;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
 }
 
 .product-link {
   display: block;
   text-decoration: none;
-  color: inherit;
+  color: #e4393c;
   height: 100%;
 }
 
@@ -562,33 +598,49 @@ text-decoration: underline;
   width: 100%;
   height: 200px;
   overflow: hidden;
-  padding: 0;
+  border-radius: 6px 6px 0 0;
 }
 
-.product-image img {
+.product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
 }
 
-.product-card:hover .product-image img {
+.product-card:hover .product-img {
   transform: scale(1.05);
 }
 
-.hot-badge {
+.image-error,
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  color: #999;
+  font-size: 14px;
+}
+
+.image-error i,
+.image-loading i {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.product-tags {
   position: absolute;
   top: 10px;
-  right: 10px;
-  background: #ff4d4f;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
+  left: 10px;
+  display: flex;
+  gap: 5px;
 }
 
 .product-info {
-  padding: 15px;
+  padding: 15px 0 0;
 }
 
 .product-name {
@@ -600,40 +652,72 @@ text-decoration: underline;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 44px;
   line-height: 1.4;
+  height: 44px;
 }
 
 .product-description {
   font-size: 12px;
   color: #666;
   margin-bottom: 10px;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 32px;
-  line-height: 1.3;
 }
 
 .product-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 15px;
 }
 
+.price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .price {
+  margin: 0;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.seckill-price {
   color: #e4393c;
   font-weight: bold;
   font-size: 18px;
-  margin: 0;
 }
 
 .sales {
   color: #999;
   font-size: 12px;
   margin: 0;
+}
+
+.cart-btn {
+  width: 100%;
+  background-color: #19be6b;
+  border-color: #19be6b;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.cart-btn:hover {
+  background-color: #0fa86b;
+  border-color: #0fa86b;
+  transform: translateY(-2px);
+}
+
+.cart-btn:active {
+  transform: translateY(0);
 }
 
 /* 空状态 */

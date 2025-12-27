@@ -17,31 +17,81 @@
       </div>
     </div>
 
+    <!-- 商品加载状态 -->
+    <div v-if="loading" class="loading-section">
+      <div class="loading-spinner"></div>
+      <p>商品加载中...</p>
+    </div>
+
     <!-- 商品网格 -->
-    <div class="products-grid">
-      <div class="product-item" v-for="product in sortedProducts" :key="product.id">
-        <el-card class="product-card" :padding="0" shadow="hover">
-          <div class="product-link" @click="handleProductClick(product)">
-            <div class="product-image">
-              <img :src="product.imageUrl" :alt="product.name">
-            </div>
-            <div class="product-info">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <div class="product-meta">
-                <p class="price">¥{{ product.price.toFixed(2) }}</p>
+    <div v-else class="products-grid">
+      <el-card 
+        v-for="product in displayedProducts" 
+        :key="product.id"
+        class="product-card"
+        :body-style="{ padding: '15px' }"
+        shadow="hover"
+      >
+        <div class="product-link" @click="handleProductClick(product)">
+          <div class="product-image">
+            <el-image 
+              :src="product.imageUrl || product.image || defaultImage" 
+              :alt="product.name"
+              fit="cover"
+              class="product-img"
+              lazy
+            >
+              <div slot="error" class="image-error">
+                <i class="el-icon-picture-outline"></i>
+                <span>加载失败</span>
               </div>
-              <Button 
-                type="success" 
-                long 
-                icon="ios-cart" 
-                @click.stop="addToCart(product)"
-              >
-                加入购物车
-              </Button>
+              <div slot="placeholder" class="image-loading">
+                <i class="el-icon-loading"></i>
+              </div>
+            </el-image>
+            
+            <!-- 商品标签 -->
+            <div v-if="product.isSeckill || product.isNew" class="product-tags">
+              <el-tag v-if="product.isSeckill" type="danger" size="mini">秒杀</el-tag>
+              <el-tag v-if="product.isNew" type="success" size="mini">新品</el-tag>
             </div>
           </div>
-        </el-card>
-      </div>
+          
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            
+            <div class="product-description" v-if="product.description">
+              <p>{{ product.description }}</p>
+            </div>
+            
+            <div class="product-meta">
+              <div class="price-section">
+                <p class="price">
+                  <template v-if="product.isSeckill">
+                    <span class="original-price">¥{{ (product.price || 0).toFixed(2) }}</span>
+                    <span class="seckill-price">¥{{ (product.seckillPrice || 0).toFixed(2) }}</span>
+                  </template>
+                  <template v-else>
+                    <span>¥{{ (product.price || 0).toFixed(2) }}</span>
+                  </template>
+                </p>
+                <p v-if="product.sales" class="sales">已售{{ product.sales }}件</p>
+              </div>
+            </div>
+            
+            <el-button 
+              type="success" 
+              class="cart-btn"
+              @click.stop="addToCart(product)"
+              icon="el-icon-shopping-cart-1"
+              size="small"
+              :loading="addingCartId === product.id"
+            >
+              {{ addingCartId === product.id ? '添加中...' : '加入购物车' }}
+            </el-button>
+          </div>
+        </div>
+      </el-card>
     </div>
     <!-- 分页 -->
     <div v-if="displayedProducts.length > 0" class="pagination-section">
@@ -81,6 +131,9 @@ export default {
         // 加载状态
         loading: false,
         addingCartId: null,
+        
+        // 默认图片
+        defaultImage: 'https://via.placeholder.com/300x300?text=商品图片'
       };
     },
     computed: {
@@ -253,12 +306,12 @@ export default {
       // 备用数据
       useFallbackData(){
         return[ 
-          { id: 701, name: '园艺剪刀套装', price: 45.0, imageUrl: 'https://img1.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 702, name: '不锈钢小铲子', price: 28.0, imageUrl: 'https://img2.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 703, name: '浇水壶 (2L)', price: 35.0, imageUrl: 'https://img3.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 704, name: '园艺手套 (加厚)', price: 15.0, imageUrl: 'https://img4.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 705, name: '植物修剪锯', price: 58.0, imageUrl: 'https://img5.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },
-          { id: 706, name: '园艺工具套装 (8件套)', price: 128.0, imageUrl: 'https://img6.baidu.com/it/u=678901234,678901234&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664' },]
+          { id: 701, name: '园艺剪刀套装', price: 45.0, imageUrl: 'https://img1.baidu.com/it/u=1709512703,905139419&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=667' },
+          { id: 702, name: '不锈钢小铲子', price: 28.0, imageUrl: 'https://t13.baidu.com/it/u=1613253233,607855048&fm=224&app=112&f=JPEG?w=500&h=500' },
+          { id: 703, name: '浇水壶 (2L)', price: 35.0, imageUrl: 'https://img1.baidu.com/it/u=3795178662,1030497591&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500' },
+          { id: 704, name: '园艺手套 (加厚)', price: 15.0, imageUrl: 'https://t15.baidu.com/it/u=2785683822,415327082&fm=224&app=112&f=JPEG?w=500&h=500' },
+          { id: 705, name: '植物修剪锯', price: 58.0, imageUrl: 'https://img0.baidu.com/it/u=3229667949,3535090277&fm=253&fmt=auto&app=138&f=JPEG?w=514&h=500' },
+          { id: 706, name: '园艺工具套装 (8件套)', price: 128.0, imageUrl: 'https://t14.baidu.com/it/u=93636103,1687264570&fm=224&app=112&f=JPEG?w=500&h=500' },]
       },
     },
 }
@@ -353,6 +406,27 @@ export default {
   border-color: #0fa86b;
 }
 
+/* 加载状态 */
+.loading-section {
+  text-align: center;
+  padding: 50px;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #19be6b;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 商品网格 */
 .products-grid {
   display: grid;
@@ -361,24 +435,20 @@ export default {
   margin-top: 20px;
 }
 
-.product-item {
-  transition: transform 0.3s;
-}
-
-.product-item:hover {
-  transform: translateY(-5px);
-}
-
 .product-card {
-  border-radius: 8px;
-  overflow: hidden;
   height: 100%;
+  transition: transform 0.3s;
+  border-radius: 8px;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
 }
 
 .product-link {
   display: block;
   text-decoration: none;
-  color: inherit;
+  color: #e4393c;
   height: 100%;
 }
 
@@ -387,21 +457,49 @@ export default {
   width: 100%;
   height: 200px;
   overflow: hidden;
+  border-radius: 6px 6px 0 0;
 }
 
-.product-image img {
+.product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
 }
 
-.product-card:hover .product-image img {
+.product-card:hover .product-img {
   transform: scale(1.05);
 }
 
+.image-error,
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  color: #999;
+  font-size: 14px;
+}
+
+.image-error i,
+.image-loading i {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.product-tags {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 5px;
+}
+
 .product-info {
-  padding: 15px;
+  padding: 15px 0 0;
 }
 
 .product-name {
@@ -413,22 +511,72 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 44px;
   line-height: 1.4;
+  height: 44px;
+}
+
+.product-description {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 32px;
 }
 
 .product-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 15px;
 }
 
+.price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .price {
+  margin: 0;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.seckill-price {
   color: #e4393c;
   font-weight: bold;
   font-size: 18px;
+}
+
+.sales {
+  color: #999;
+  font-size: 12px;
   margin: 0;
+}
+
+.cart-btn {
+  width: 100%;
+  background-color: #19be6b;
+  border-color: #19be6b;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.cart-btn:hover {
+  background-color: #0fa86b;
+  border-color: #0fa86b;
+  transform: translateY(-2px);
+}
+
+.cart-btn:active {
+  transform: translateY(0);
 }
 /* 分页 */
 .pagination-section {

@@ -260,7 +260,7 @@ export default {
       addingToCart: false,
       
       // 默认图片
-      defaultImage: 'https://img1.baidu.com/it/u=3148947595,1853549332&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=664'
+      defaultImage: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=500&h=664&fit=crop'
     };
   },
   computed: {
@@ -320,6 +320,9 @@ export default {
       'setLoading',
       'setError'
     ]),
+    ...mapActions('cart', {
+      addToCartStore: 'addToCart'
+    }),
     
     // 获取用户信息
     async fetchUserInfo() {
@@ -487,10 +490,13 @@ export default {
           description: this.commodity.description || this.commodity.name // 添加描述字段
         };
 
+        // 同时调用API和Vuex store来确保数据同步
         const response = await cartAPI.addToCart(cartData);
         
         // 检查 response 是否存在
         if (response && response.code === 200) {
+          // API调用成功，同时更新本地存储
+          await this.addToCartStore(cartData); // 调用Vuex store的addToCart action
           this.$message.success(response.message || '商品已成功加入购物车');
         } else {
           this.$message.error(response?.message || '加入购物车失败');
@@ -498,10 +504,25 @@ export default {
       } catch (error) {
         console.error('添加到购物车失败:', error);
         
-        if (error?.response && error.response.data) {
-          this.$message.error(error.response.data.message || '加入购物车失败');
-        } else {
-          this.$message.error('网络错误，请检查连接');
+        // 即使API调用失败，也尝试更新本地存储（离线模式支持）
+        try {
+          await this.addToCartStore({
+            id: this.commodity.id,
+            name: this.commodity.name,
+            price: this.commodity.price,
+            quantity: this.quantity,
+            image: this.commodity.image,
+            description: this.commodity.description || this.commodity.name
+          });
+          this.$message.success('商品已成功加入购物车（离线模式）');
+        } catch (storeError) {
+          console.error('更新本地存储失败:', storeError);
+          
+          if (error?.response && error.response.data) {
+            this.$message.error(error.response.data.message || '加入购物车失败');
+          } else {
+            this.$message.error('网络错误，请检查连接');
+          }
         }
       } finally {
         this.addingToCart = false;
@@ -509,16 +530,75 @@ export default {
     },
 
     // 立即购买
-    buyNow() {
+    async buyNow() {
       if (!this.commodity || this.commodity.stock === 0) return;
       
-      this.$router.push({
-        path: '/checkout',
-        query: { 
-          productId: this.commodity.id,
-          quantity: this.quantity
+      try {
+        // 显示支付确认对话框
+        const confirmResult = await this.$confirm(
+          `确认购买 ${this.commodity.name} x${this.quantity} 件，总价 ¥${(this.commodity.price * this.quantity).toFixed(2)} 吗？`,
+          '确认购买',
+          {
+            confirmButtonText: '确认支付',
+            cancelButtonText: '取消',
+            type: 'warning',
+            closeOnClickModal: false
+          }
+        );
+        
+        if (confirmResult) {
+          // 模拟支付处理
+          this.$message({
+            message: '支付处理中...',
+            type: 'info',
+            duration: 2000
+          });
+          
+          // 模拟支付延迟
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 显示支付成功弹窗
+          this.showPaymentSuccess();
         }
-      });
+      } catch (error) {
+        // 用户取消支付
+        if (error !== 'cancel') {
+          this.$message.info('您已取消支付');
+        }
+      }
+    },
+    
+    // 显示支付成功弹窗
+    showPaymentSuccess() {
+      this.$alert(
+        `<div style="text-align: center;">
+          <i class="el-icon-success" style="color: #67C23A; font-size: 48px; margin-bottom: 16px;"></i>
+          <h3 style="color: #67C23A; margin: 16px 0;">支付成功！</h3>
+          <p style="font-size: 18px; margin: 8px 0;">支付金额：<strong>¥${(this.commodity.price * this.quantity).toFixed(2)}</strong></p>
+          <p style="color: #666; margin: 8px 0;">购买商品：${this.commodity.name}</p>
+          <p style="color: #666; margin: 8px 0;">购买数量：${this.quantity}件</p>
+          <p style="color: #999; font-size: 14px; margin-top: 16px;">订单将在24小时内发货，请注意查收</p>
+        </div>`,
+        '支付成功',
+        {
+          dangerouslyUseHTMLString: true,
+          showConfirmButton: true,
+          confirmButtonText: '继续购物',
+          showCancelButton: true,
+          cancelButtonText: '查看订单',
+          type: 'success',
+          center: true,
+          callback: (action) => {
+            if (action === 'confirm') {
+              this.$router.push('/main');
+            } else if (action === 'cancel') {
+              // 这里可以跳转到订单页面
+              this.$message.info('订单页面开发中...');
+            }
+            this.$message.success('感谢您的购买！');
+          }
+        }
+      );
     },
 
     // 获取规格标签

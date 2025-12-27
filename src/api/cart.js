@@ -9,7 +9,7 @@ const getCurrentUserId = () => {
 // 获取购物车列表
 export const getCartList = () => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? `/api/cart?userId=${userId}` : `/api/cart?userId=${userId}`
+  const url = isMockEnabled() ? `/cart?userId=${userId}` : `/cart?userId=${userId}`
   return api.get(url)
 }
 
@@ -28,7 +28,7 @@ export const addToCart = (productData) => {
     description: productData.description || productData.comDescription || ''
   };
   
-  const url = isMockEnabled() ? '/api/cart/add' : '/api/cart/add'
+  const url = isMockEnabled() ? '/cart/add' : '/cart/add'
   console.log('添加到购物车请求数据:', requestData); // 调试用
   return api.post(url, requestData)
 }
@@ -36,7 +36,7 @@ export const addToCart = (productData) => {
 // 更新购物车商品数量
 export const updateCartItem = (cartId, quantity) => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? '/api/cart/update' : '/api/cart/update'
+  const url = isMockEnabled() ? '/cart/update' : '/cart/update'
   return api.put(url, { 
     userId, 
     cartId, 
@@ -47,19 +47,14 @@ export const updateCartItem = (cartId, quantity) => {
 // 删除购物车商品
 export const removeFromCart = (cartId) => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? '/api/cart/delete' : '/api/cart/delete'
-  return api.delete(url, { 
-    data: { 
-      userId, 
-      cartId 
-    } 
-  })
+  const url = isMockEnabled() ? '/cart/delete' : '/cart/delete'
+  return api.delete(url, { data: { userId, cartId } })
 }
 
 // 切换购物车商品选中状态
 export const toggleCartItemCheck = (cartId, checked) => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? '/api/cart/toggleCheck' : '/api/cart/toggleCheck'
+  const url = isMockEnabled() ? '/cart/toggleCheck' : '/cart/toggleCheck'
   return api.post(url, { 
     userId, 
     cartId, 
@@ -67,17 +62,15 @@ export const toggleCartItemCheck = (cartId, checked) => {
   })
 }
 
-// 清空购物车
 export const clearCart = () => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? `/api/cart/clear?userId=${userId}` : `/api/cart/clear?userId=${userId}`
+  const url = isMockEnabled() ? `/cart/clear?userId=${userId}` : `/cart/clear?userId=${userId}`
   return api.delete(url)
 }
 
-// 批量操作购物车
 export const batchUpdateCart = (items) => {
   const userId = getCurrentUserId();
-  const url = isMockEnabled() ? '/api/cart/batch' : '/api/cart/batch'
+  const url = isMockEnabled() ? '/cart/batch' : '/cart/batch'
   return api.put(url, { 
     userId, 
     items 
