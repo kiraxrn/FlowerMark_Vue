@@ -38,7 +38,7 @@
             <div class="quantity-control">
               <button 
                 class="btn-quantity" 
-                @click="updateQuantity(item.id, item.quantity - 1)"
+                @click="updateQuantity({ id: item.id, quantity: item.quantity - 1 })"
                 :disabled="item.quantity <= 1"
               >-</button>
               <input 
@@ -49,7 +49,7 @@
               >
               <button 
                 class="btn-quantity" 
-                @click="updateQuantity(item.id, item.quantity + 1)"
+                @click="updateQuantity({ id: item.id, quantity: item.quantity +1 })"
               >+</button>
             </div>
 
