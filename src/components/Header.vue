@@ -102,7 +102,7 @@ export default {
         '/miaosha': ['/miaosha'],
         '/help': ['/help']
       },
-      localAvatar: null // 新增：本地头像缓存
+      localAvatar: null // 本地头像缓存
     }
   },
   computed: {

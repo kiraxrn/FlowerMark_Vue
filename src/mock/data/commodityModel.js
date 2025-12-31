@@ -699,7 +699,7 @@ export const mockCommodities = [
     tags: ["清洁用品", "配件"]
   },
   {
-    id: 22,
+    id: 33,
     name: "画眉保健砂",
     price: 18.0,
     seckillPrice: 14.0,
@@ -727,7 +727,7 @@ export const mockCommodities = [
   },
   // 园艺工具数据 (categoryId: 6)
   { 
-    id: 23,
+    id: 27,
     name: '园艺剪刀套装',
     price: 45.0,
     seckillPrice: 35.0,
@@ -755,7 +755,7 @@ export const mockCommodities = [
     tags: ['工具', '套装']
   },
   { 
-    id: 24,
+    id: 28,
     name: '不锈钢小铲子',
     price: 28.0,
     seckillPrice: 18.0,
@@ -783,7 +783,7 @@ export const mockCommodities = [
     tags: ['工具', '铲子']
   },
   {
-    id: 25,
+    id: 29,
     name: '浇水壶 (2L)',
     price: 35.0,
     seckillPrice: 25.0,
@@ -811,7 +811,7 @@ export const mockCommodities = [
     tags: ['工具', '浇水']
   },
   {
-    id: 26,
+    id: 30,
     name: '园艺手套 (加厚)',
     price: 15.0,
     seckillPrice: 9.9,
@@ -839,7 +839,7 @@ export const mockCommodities = [
     tags: ['防护', '手套']
   },
   {
-    id: 27,
+    id: 31,
     name: '植物修剪锯',
     price: 58.0,
     seckillPrice: 45.0,
@@ -867,7 +867,7 @@ export const mockCommodities = [
     tags: ['工具', '锯子']
   },
   {
-    id: 28,
+    id: 32,
     name: '园艺工具套装 (8件套)',
     price: 128.0,
     seckillPrice: 99.0,

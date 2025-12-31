@@ -450,7 +450,7 @@ export default {
         // 确保是数组
         this.commodities = Array.isArray(searchResults) ? searchResults : [];
         
-        // 调试：检查第一个结果的字段
+        // 检查第一个结果的字段
         if (this.commodities.length > 0) {
           console.log('第一个搜索结果的字段:', Object.keys(this.commodities[0]));
           console.log('第一个搜索结果内容:', this.commodities[0]);
@@ -490,7 +490,7 @@ export default {
       }
     },
     
-    // 新增：验证搜索结果是否包含关键词
+    // 验证搜索结果是否包含关键词
     filterBySearchTerm(items, searchTerm) {
       if (!searchTerm || !searchTerm.trim()) return items;
       

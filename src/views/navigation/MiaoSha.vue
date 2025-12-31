@@ -272,11 +272,30 @@ export default {
       const productData = {
         id: item.comId,
         name: item.comName,
-        price: item.seckillPrice,
-        originalPrice: item.comPrice,
-        image: item.comPicture,
-        stock: item.stock,
-        sales: item.total - item.stock
+        price: item.seckillPrice,          // 秒杀价格
+        originalPrice: item.comPrice,      // 原价
+        image: item.comPicture || this.defaultImg,
+        stock: item.stock,                 // 当前库存
+        totalStock: item.total,            // 总库存
+        sales: item.total - item.stock,    // 已售数量
+        category: item.category || '秒杀商品', // 商品分类
+        details: item.details || '暂无详情',
+        description: item.description || `${item.comName} - 限时秒杀商品，数量有限，先到先得！`,
+        tags: ['秒杀', '限时特惠'],         // 商品标签
+        seckillInfo: {
+          isSeckill: true,
+          seckillPrice: item.seckillPrice,
+          originalPrice: item.comPrice,
+          seckillStock: item.stock,
+          totalSeckill: item.total
+        },
+        weight: item.weight || '0.5kg',
+        material: item.material || '鲜花',
+        origin: item.origin || '云南',
+        shelfLife: item.shelfLife || '7天',
+        deliveryInfo: '全国包邮，24小时内发货',
+        // 图片集（如果有多张图片）
+        images: item.images || [item.comPicture || this.defaultImg]
       };
       
       // 保存到Vuex
@@ -305,13 +324,7 @@ export default {
     
     // 获取秒杀商品
     async fetchSeckillProducts() {
-      console.log('====================================')
-      console.log('🔍 开始获取秒杀商品 - 测试信息检查')
-      console.log('当前时间:', new Date().toLocaleString())
-      console.log('当前页面:', this.currentPage)
-      console.log('每页数量:', this.pageSize)
-      console.log('====================================')
-      
+      console.log(' 开始获取秒杀商品 - 测试信息检查')     
       // 备用数据
       const fallbackData = [
         {
@@ -358,17 +371,17 @@ export default {
       
       try {
         // 尝试调用 API
-        console.log('📞 调用 API: getSeckillCommodities')
+        console.log(' 调用 API: getSeckillCommodities')
         const response = await getSeckillCommodities()
-        console.log('📥 API 响应类型:', typeof response)
-        console.log('📋 API 响应完整内容:', JSON.stringify(response, null, 2))
+        console.log(' API 响应类型:', typeof response)
+        console.log(' API 响应完整内容:', JSON.stringify(response, null, 2))
         
         // 直接从响应中获取商品信息，不做复杂的二次处理
         let seckillData = []
         
         // 简化响应处理，直接获取商品数据
         if (response) {
-          console.log('🔄 开始解析响应数据...')
+          console.log('开始解析响应数据...')
           // 检查axios响应格式，获取实际数据
           const resData = response.data || response
           
@@ -378,20 +391,20 @@ export default {
             if (Array.isArray(resData.data)) {
               // data直接是数组
               seckillData = resData.data
-              console.log('✅ 从响应data数组获取商品:', seckillData.length)
+              console.log(' 从响应data数组获取商品:', seckillData.length)
             } else if (resData.data && Array.isArray(resData.data.list)) {
               // data包含list数组
               seckillData = resData.data.list
-              console.log('✅ 从响应data.list获取商品:', seckillData.length)
+              console.log('从响应data.list获取商品:', seckillData.length)
             }
           } else if (Array.isArray(resData)) {
             // 直接是数组
             seckillData = resData
-            console.log('✅ 从直接数组获取商品:', seckillData.length)
+            console.log('从直接数组获取商品:', seckillData.length)
           } else if (resData && Array.isArray(resData.list)) {
             // 直接包含list数组
             seckillData = resData.list
-            console.log('✅ 从直接list获取商品:', seckillData.length)
+            console.log('从直接list获取商品:', seckillData.length)
           }
         }
         
@@ -403,7 +416,7 @@ export default {
         
         // 输出每个商品的详细信息
         seckillData.forEach((item, index) => {
-          console.log(`📦 商品 ${index + 1} 详情:`)
+          console.log(` 商品 ${index + 1} 详情:`)
           console.log(`   ID: ${item.id || 'NaN'}`)
           console.log(`   名称: ${item.name || '未命名'}`)
           console.log(`   原价: ${item.price || 'NaN'}`)
@@ -418,6 +431,7 @@ export default {
           comId: item.id,
           comName: item.name,
           comPrice: item.price,
+          details: item.details,
           seckillPrice: item.seckillPrice,
           comPicture: item.image || item.images?.[0] || this.defaultImg,
           stock: item.seckillStock || item.stock,
@@ -427,7 +441,7 @@ export default {
         this.totalCount = seckillData.length
         
         console.log('====================================')
-        console.log('🎉 秒杀商品获取成功！')
+        console.log(' 秒杀商品获取成功！')
         console.log('最终商品数量:', this.seckillProducts.length)
         console.log('总商品数量:', this.totalCount)
         console.log('====================================')

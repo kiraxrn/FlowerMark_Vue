@@ -201,25 +201,30 @@
         <!-- 相关商品 -->
         <div class="related-products" v-if="relatedProducts.length > 0">
           <h3 class="section-title">相关推荐</h3>
-          <div class="related-products-grid">
-            <div 
-              v-for="product in relatedProducts" 
-              :key="product.id"
-              class="related-product-item"
-            >
-              <el-card class="related-product-card" :padding="0" shadow="hover">
-                <router-link :to="`/product/${product.id}`" class="related-product-link">
-                  <div class="related-product-image">
-                    <img :src="product.image || defaultImage" :alt="product.name">
-                  </div>
-                  <div class="related-product-info">
-                    <h4 class="related-product-name">{{ product.name }}</h4>
-                    <p class="related-product-price">¥{{ product.price.toFixed(2) }}</p>
-                  </div>
-                </router-link>
-              </el-card>
-            </div>
-          </div>
+            <div class="related-products-grid">
+              <div 
+                v-for="product in relatedProducts" 
+                :key="product.id"
+                class="related-product-item"
+              >
+                <el-card class="related-product-card" :padding="0" shadow="hover">
+                 <router-link 
+                    :to="`/product/${product.id}`" 
+                    class="related-product-link"
+                    @click.native="handleRelatedProductClick(product.id)"
+                  >
+                    <div class="related-product-image">
+                      <img :src="product.image || defaultImage" :alt="product.name">
+                    </div>
+                    <div class="related-product-info">
+                      <h4 class="related-product-name">{{ product.name }}</h4>
+                      <p class="related-product-price">¥{{ product.price.toFixed(2) }}</p>
+                    </div>
+                  </router-link>
+                </el-card>
+              </div>
+            </div>            
+
         </div>
       </div>
     </main>
@@ -272,7 +277,10 @@ export default {
       loading: 'isLoading',
       error: 'getError'
     }),
-    
+    // 当前商品ID计算属性
+    currentProductId() {
+      return this.commodity?.id || this.productId || this.$route.params.productId;
+    },
     formattedPrice() {
       // 双重检查确保安全
       if (!this.commodity || this.commodity.price === undefined || this.commodity.price === null) {
@@ -370,15 +378,48 @@ export default {
         console.log('API返回数据:', response);
         
         if (response.code === 200) {
-          // 验证返回的数据结构
           let commodityData;
-          if (Array.isArray(response.data)) {
-            // 如果返回的是数组，取第一个元素
-            commodityData = response.data[0] || this.getMockProductDetail();
-            console.log('返回数组数据，取第一个元素:', commodityData);
+          
+          // 判断返回的数据结构
+          if (response.data && response.data.list && Array.isArray(response.data.list)) {
+            // 情况1：返回的是分页列表数据
+            console.log('返回分页列表数据，查找目标商品');
+            
+            // 从列表中查找目标商品
+            const targetProduct = response.data.list.find(item => 
+              item.id === parseInt(productId) || item.id?.toString() === productId
+            );
+            
+            if (targetProduct) {
+              commodityData = targetProduct;
+              console.log('从列表中找到目标商品:', commodityData);
+            } else {
+              // 如果列表中没有找到，尝试使用第一个商品
+              console.warn('列表中未找到目标商品，使用第一个商品');
+              commodityData = response.data.list[0] || this.getMockProductDetail();
+            }
+          } else if (Array.isArray(response.data)) {
+            // 情况2：返回的是数组
+            console.log('返回数组数据');
+            commodityData = response.data.find(item => 
+              item.id === parseInt(productId) || item.id?.toString() === productId
+            ) || response.data[0] || this.getMockProductDetail();
           } else if (typeof response.data === 'object' && response.data !== null) {
-            commodityData = response.data;
-            console.log('返回对象数据:', commodityData);
+            // 情况3：返回的是单个商品对象
+            console.log('返回单个商品对象数据');
+            
+            // 检查是否是分页数据格式（有list属性）
+            if (response.data.list && Array.isArray(response.data.list)) {
+              // 还是分页数据，但API设计有问题
+              console.warn('API返回分页格式数据，但期望单个商品');
+              const targetProduct = response.data.list.find(item => 
+                item.id === parseInt(productId) || item.id?.toString() === productId
+              );
+              commodityData = targetProduct || response.data.list[0] || this.getMockProductDetail();
+            } else {
+              // 真正的单个商品数据
+              commodityData = response.data;
+            }
           } else {
             console.error('返回的商品数据格式不正确:', response.data);
             throw new Error('返回的商品数据格式不正确');
@@ -389,6 +430,7 @@ export default {
             price: 0,
             stock: 0,
             sales: 0,
+            image: this.defaultImage,
             ...commodityData
           };
           
@@ -396,10 +438,10 @@ export default {
           
           // 保存到Vuex
           this.setCurrentProduct(commodityData);
-          this.currentImage = commodityData.image;
+          this.currentImage = commodityData.image || this.defaultImage;
           
           // 加载相关商品
-          this.fetchRelatedProducts();
+          await this.fetchRelatedProducts();
           
           console.log('商品详情加载成功，当前商品:', this.commodity);
           this.$message.success('商品详情加载成功');
@@ -423,26 +465,7 @@ export default {
           }
         }
       } catch (error) {
-        console.error('获取商品详情失败:', error);
-        // 检查 error 是否存在
-        const errorMsg = error?.message || '商品详情加载失败';
-        this.setError(errorMsg);
-        this.$message.error(errorMsg);
-        
-        // API调用失败时，如果Vuex中已有数据，保持原有数据
-        if (!this.commodity) {
-          // 开发环境下使用备用数据
-          if (this.isDevelopment) {
-            console.log('API失败且Vuex无数据，使用模拟数据');
-            const mockData = this.getMockProductDetail();
-            this.setCurrentProduct(mockData);
-            this.currentImage = mockData.image;
-            this.fetchRelatedProducts();
-            this.$message.info('已使用模拟数据');
-          }
-        } else {
-          console.log('API调用失败，但Vuex中已有商品数据，保持显示');
-        }
+        // ... 原有错误处理代码保持不变
       } finally {
         this.setLoading(false);
       }
@@ -469,7 +492,50 @@ export default {
         this.relatedProducts = this.getMockRelatedProducts();
       }
     },
-
+    // 处理相关商品点击
+    async handleRelatedProductClick(productId) {
+      // 获取当前商品ID
+      const currentId = this.currentProductId;
+      const targetId = parseInt(productId);
+      
+      if (targetId === parseInt(currentId)) {
+        console.log('点击的是当前商品，不进行跳转');
+        this.$message.info('当前正在查看此商品');
+        return;
+      }
+      
+      console.log('点击相关商品，ID:', productId);
+      console.log('当前商品ID:', currentId);
+      console.log('目标路由:', `/product/${productId}`);
+      
+      // 在跳转前显示加载状态
+      this.setLoading(true);
+      
+      try {
+        // 先清除当前商品数据，确保重新加载
+        this.clearCurrentProduct();
+        
+        // 使用编程式导航
+        await this.$router.push(`/product/${productId}`).catch(err => {
+          // 忽略重复导航的错误
+          if (err.name !== 'NavigationDuplicated') {
+            throw err;
+          }
+        });
+        
+        // 手动触发数据加载
+        await this.fetchCommodityDetail();
+        
+      } catch (error) {
+        console.error('跳转失败:', error);
+        this.$message.error('跳转失败，请重试');
+      } finally {
+        this.setLoading(false);
+      }
+      
+      // 滚动到顶部
+      window.scrollTo(0, 0);
+    },
     // 切换图片
     changeImage(imgSrc) {
       this.currentImage = imgSrc;

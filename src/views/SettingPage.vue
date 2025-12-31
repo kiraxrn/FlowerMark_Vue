@@ -258,23 +258,27 @@ export default {
         },
         { 
           name: '头像4', 
-          url: 'https://images.unsplash.com/photo-1594736797933-d0c64a0d9d43?w=500&h=500&fit=crop' 
+          url: require('@/assets/img/pexels-aditya-aiyar-615049-1407325.jpg')
         },
         { 
           name: '头像5', 
-          url: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=500&fit=crop' 
+          url: require('@/assets/img/pexels-billelmoula-542517.jpg')
         },
         { 
           name: '头像6', 
-          url: 'https://images.unsplash.com/photo-1578326457397-2a7b4c1a5c5b?w=500&h=500&fit=crop' 
+          url: require('@/assets/img/pexels-hieu-641561.jpg')
         },
         { 
           name: '头像7', 
-          url: 'https://images.unsplash.com/photo-1578321272177-44a4a8e5c0d5?w=500&h=500&fit=crop' 
+          url: require('@/assets/img/pexels-pixabay-46166.jpg')
         },
         { 
           name: '头像8', 
-          url: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop' 
+          url: require('@/assets/img/pexels-roshan-kamath-793618-1661179.jpg')
+        },
+        { 
+          name: '头像9', 
+          url: require('@/assets/img/pexels-suzyhazelwood-1578105.jpg')
         }
       ]
     }

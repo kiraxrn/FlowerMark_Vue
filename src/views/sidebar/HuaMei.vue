@@ -219,8 +219,7 @@ export default {
     async fetchProducts() {
       this.loading = true;
       try {
-        console.log('=== HuaMei.vue 花美商品数据请求开始 ===');
-        console.log('HuaMei.vue 调用 commodityAPI.getCommoditiesByCategory(5)');
+        console.log('=== HuaMei.vue 商品数据请求开始 ===');
         
         const response = await commodityAPI.getCommoditiesByCategory(5);
         
